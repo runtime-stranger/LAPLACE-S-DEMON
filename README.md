@@ -310,12 +310,11 @@ Copyright © 2026 runtime-stranger. All rights reserved.
 
 | Parametre | Değer |
 |-----------|-------|
-| **Lisans Türü** | Business Source License 1.1 |
+| **Lisans Türü** | Business Source License 1.1 (Kalıcı) |
 | **Ek Kullanım İzni** | Yalnızca eğitim/araştırma amaçlı |
-| **Değişim Tarihi** | 8 Temmuz 2036 (Apache 2.0'a dönüşür) |
-| **Değişim Lisansı** | Apache License 2.0 |
+| **Süre** | **SÜRESİZ / PERPETUAL** — dönüşüm yok |
 
-**Ticari kullanım, kopyalayarak para kazanma, fork ederek ticari sisteme dönüştürme KESİNLİKLE YASAKTIR.** Detaylı metin için [LICENSE](./LICENSE) dosyasını inceleyiniz.
+**Ticari kullanım, kopyalayarak para kazanma, fork ederek ticari sisteme dönüştürme KESİNLİKLE YASAKTIR.** Bu lisans kalıcıdır (perpetual), hiçbir açık kaynak lisansa dönüşmez. Detaylı metin için [LICENSE](./LICENSE) dosyasını inceleyiniz.
 
 ---
 

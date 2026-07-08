@@ -11,18 +11,17 @@ Licensor:             runtime-stranger
 Licensed Work:        LAPLACE'S DEMON (The Licensed Work is (c) 2026
                       runtime-stranger)
 Additional Use Grant: The Licensed Work may be used, copied, modified,
-                      and distributed for NON-COMMERCIAL, EDUCATIONAL,
-                      AND RESEARCH PURPOSES ONLY.  Any use of the Licensed
-                      Work in a production environment, for commercial
-                      gain, or as part of a revenue-generating activity
-                      (including but not limited to MEV extraction,
-                      arbitrage trading, market making, front-running,
-                      or operation by hedge funds, proprietary trading
-                      firms, or financial institutions) is STRICTLY
-                      PROHIBITED without express written permission from
-                      the Licensor.
-Change Date:          2036-07-08
-Change License:       Apache License, Version 2.0
+                       and distributed for NON-COMMERCIAL, EDUCATIONAL,
+                       AND RESEARCH PURPOSES ONLY.  Any use of the Licensed
+                       Work in a production environment, for commercial
+                       gain, or as part of a revenue-generating activity
+                       (including but not limited to MEV extraction,
+                       arbitrage trading, market making, front-running,
+                       or operation by hedge funds, proprietary trading
+                       firms, or financial institutions) is STRICTLY
+                       PROHIBITED without express written permission from
+                       the Licensor. This Additional Use Grant is
+                       PERPETUAL and does not expire or convert.
 
 -----------------------------------------------------------------------------
 
@@ -33,14 +32,9 @@ works, redistribute, and make non-production use of the Licensed Work. The
 Licensor may make an Additional Use Grant, above, permitting limited
 production use.
 
-Effective on the Change Date, or the fourth anniversary of the first publicly
-available distribution of a specific version of the Licensed Work under this
-License, whichever comes first, the Licensed Work will become available
-under the terms of the Change License, which is displayed above.
-
 Use of the Licensed Work is restricted by the Additional Use Grant above,
-both before and after the Change Date, UNLESS your use is authorized by the
-Additional Use Grant or the Change License.
+PERPETUALLY, UNLESS your use is authorized by the Additional Use Grant
+or by express written permission from the Licensor.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
