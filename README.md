@@ -6,200 +6,215 @@
 
 ---
 
-## ⚠️ TİCARİ KULLANIM YASAĞI — BUSINESS SOURCE LICENSE 1.1
+## ⚠️ COMMERCIAL USE PROHIBITED — Business Source License 1.1
 
-Bu proje **BSL 1.1 (Business Source License)** ile korunmaktadır.
-**Kesinlikle ticari amaçla kullanılamaz, kopyalanıp çalıştırılarak para kazanılamaz.**
+**EN:** This project is protected under **BSL 1.1 (Business Source License) — PERPETUAL**. Commercial use, copying for profit, or running as a commercial service is **STRICTLY PROHIBITED**.
 
-| İzin Durumu | Açıklama |
-|-------------|----------|
-| ✅ **Eğitim/İnceleme** | Kaynak kod görüntülenebilir, fork edilebilir, incelenebilir |
-| ❌ **Ticari Kullanım** | MEV çıkarma, arbitraj, market making, HFT — KESİNLİKLE YASAK |
-| ❌ **SaaS / Bulut** | Herhangi bir ticari servis olarak sunulamaz |
-| ❌ **Finans Kurumları** | Hedge fonlar, prop trading firmaları kullanamaz |
+**TR:** Bu proje **BSL 1.1 (Business Source License) — KALICI** lisans ile korunmaktadır. Ticari kullanım, kopyalayarak para kazanma, ticari servis olarak çalıştırma **KESİNLİKLE YASAKTIR**.
 
-İhlal durumunda yasal haklar saklıdır. Detay: [LICENSE](./LICENSE)
+| Status / Durum | Description / Açıklama |
+|----------------|------------------------|
+| ✅ **Education/Research** (Eğitim/İnceleme) | Source code may be viewed, forked, studied |
+| ❌ **Commercial Use** (Ticari Kullanım) | MEV extraction, arbitrage, market making, HFT — **FORBIDDEN** |
+| ❌ **SaaS / Cloud** | Cannot be offered as a commercial service |
+| ❌ **Financial Institutions** | Hedge funds, prop trading firms may NOT use |
+
+Legal rights reserved in case of violation. Details: [LICENSE](./LICENSE)
 
 ---
 
 ## 📖 Operational Playbook (Kullanım Kılavuzu)
 
-Bu kılavuz, sistemi **bare-metal (fiziki) sunucunuzda sıfır hata ile ayağa kaldırmanız** için tasarlanmış kurumsal operasyon adımlarıdır. **Sıralamaya mutlak suretle uyunuz.**
+**EN:** This guide provides enterprise-grade operational steps to deploy the system on **bare-metal servers with zero error**. Follow the sequence strictly.
+
+**TR:** Bu kılavuz, sistemi **bare-metal (fiziki) sunucunuzda sıfır hata ile ayağa kaldırmanız** için tasarlanmış kurumsal operasyon adımlarıdır. **Sıralamaya mutlak suretle uyunuz.**
 
 ---
 
-### 🛑 ÖNEMLİ UYARI: Fiziksel Konsol / IPMI Erişimi
+### 🛑 WARNING / ÖNEMLİ UYARI: IPMI / Physical Console Required
 
-> **KRİTİK NOT:** `Adım 2` (Ağ Kalkanı) çalıştırıldığı an sunucunun dış dünyaya bakan tüm standart portları (klasik SSH dahil) kapatılacaktır. Bu nedenle, adımları uygularken sunucu sağlayıcınızın (Örn: Hetzner, OVH, Dell iDRAC) size sunduğu **IPMI / KVM Over IP** (Fiziksel ekran simülasyonu) konsolunun açık ve elinizin altında olduğundan **emin olun**.
+**EN:** After `Step 2` (Network Shield) executes, all standard ports including SSH will be **dropped**. Ensure your provider's **IPMI / KVM Over IP** console is open and accessible before proceeding.
+
+**TR:** `Adım 2` (Ağ Kalkanı) çalıştırıldığı an sunucunun dış dünyaya bakan tüm standart portları (klasik SSH dahil) kapatılacaktır. Sunucu sağlayıcınızın size sunduğu **IPMI / KVM Over IP** konsolunun açık ve elinizin altında olduğundan **emin olun**.
 
 ---
 
-### Adım 1: Sunucu Çekirdek İzolasyonu
+### Step 1 / Adım 1: CPU Core Isolation (Çekirdek İzolasyonu)
 
-İlk adım, sunucunun işlemci çekirdeklerini (Core 2 ve Core 3) sadece bota rezerve etmek ve arka plan donanım kesmelerini temizlemektir.
+**EN:** Reserve Core 2 and Core 3 exclusively for the bot. Isolate hardware interrupts away from these cores.
+
+**TR:** İşlemci çekirdeklerini (Core 2 ve Core 3) sadece bota rezerve etmek ve arka plan donanım kesmelerini temizlemek.
 
 ```bash
-# Root yetkisine geç
 sudo su
-
-# Betiği çalıştırılabilir yap ve ateşle
 chmod +x scripts/setup.sh
 sudo bash scripts/setup.sh
 ```
 
-Ekranda `[OK]` 9 adımın da tamamlandığını gördükten sonra, Linux çekirdeğinin (GRUB) izolasyon parametrelerini devreye alması için sunucuyu **yeniden başlatın**:
-
+Reboot when all 9 steps show `[OK]`:
 ```bash
 sudo reboot
 ```
 
-Sunucu açıldıktan sonra çekirdeklerin izole edildiğini doğrulayın:
-
+Verify isolation:
 ```bash
 cat /sys/devices/system/cpu/isolated
 ```
 
-> **Beklenen çıktı:** `2-3`
+> **Expected / Beklenen:** `2-3`
 >
-> Bu, işlemcinin en hızlı iki kalbinin artık tamamen bota adandığı anlamına gelir. Core 0 ve Core 1 ise işletim sistemi, ağ kesmeleri (IRQ) ve Watchdog için rezerve edilmiştir.
+> **EN:** The two fastest cores are now fully dedicated to the bot. Core 0 and Core 1 are reserved for OS, network IRQs, and Watchdog.
+>
+> **TR:** İşlemcinin en hızlı iki kalbi artık tamamen bota adanmıştır. Core 0 ve Core 1 işletim sistemi, ağ kesmeleri (IRQ) ve Watchdog için rezerve edilmiştir.
 
 ---
 
-### Adım 2: Kriptografik Tünel ve Ağ Kalkanı
+### Step 2 / Adım 2: Encrypted Tunnel & Network Shield (Kriptografik Tünel ve Ağ Kalkanı)
 
-Bu adımda sunucu dış dünyaya tamamen sağırlaştırılacak ve RPC düğümünüze özel şifreli bir WireGuard otobanı (`wg0`) kurulacaktır.
+**EN:** The server will be deafened to the outside world. All traffic flows through an encrypted WireGuard highway (`wg0`) to your RPC node.
 
-**Ön hazırlık:** RPC düğümünüzü (Node) sağlayan şirketten veya kendi yerel düğümünüzden şu iki veriyi alın:
+**TR:** Sunucu dış dünyaya tamamen sağırlaştırılacak ve RPC düğümünüze özel şifreli bir WireGuard otobanı (`wg0`) kurulacaktır.
 
-| Parametre | Örnek |
-|-----------|-------|
+**Prerequisites / Ön hazırlık:** Obtain from your RPC node provider:
+
+| Parameter / Parametre | Example / Örnek |
+|-----------------------|-----------------|
 | RPC WireGuard IP/Port (Endpoint) | `185.12.34.56:51820` |
-| RPC WireGuard Public Key | `abc1234...base64_kod...` |
-
-Bu verileri aşağıdaki komutun içine yerleştirerek çalıştırın:
+| RPC WireGuard Public Key | `abc1234...base64...` |
 
 ```bash
 chmod +x scripts/network_defense.sh
 
 sudo WG_ENDPOINT="185.12.34.56:51820" \
-     WG_PEER_PUBKEY="abc1234...base64_kod..." \
+     WG_PEER_PUBKEY="abc1234...base64..." \
      bash scripts/network_defense.sh install
 ```
 
-Komut bittiğinde ekrana **bu sunucunun Yerel Genel Anahtarı (Local Public Key)** basılacaktır. O anahtarı kopyalayın ve RPC düğümünüzün ayarlarına (Peer kısmına) ekleyin. Tünel kriptografik olarak el sıkışacaktır.
+**EN:** Copy the displayed **Local Public Key** and add it to your RPC node's Peer configuration.
 
-**Doğrulama:**
+**TR:** Ekrana basılan **Yerel Genel Anahtarı** kopyalayın ve RPC düğümünüzün ayarlarına (Peer kısmına) ekleyin.
 
+**Verify / Doğrulama:**
 ```bash
 sudo bash scripts/network_defense.sh status
 ```
 
-> Beklenen: Tüm portlar `DROP`, `wg0` tüneli `Active`, `txqueuelen 10000`
+> **Expected / Beklenen:** All ports `DROP`, `wg0` tunnel `Active`, `txqueuelen 10000`
 
 ---
 
-### Adım 3: Askeri Sınıf Anahtar Kalkanı (Keyring)
+### Step 3 / Adım 3: Military-Grade Key Shield (Askeri Sınıf Anahtar Kalkanı)
 
-Botun Ethereum işlemlerini tetikleyeceği **boş geçici sıcak cüzdan (Hot Wallet)** anahtarı, diske yazılmadan doğrudan Linux çekirdeğinin güvenli hafızasına şifrelenerek enjekte edilecektir.
+**EN:** The bot's hot wallet private key is encrypted directly into the Linux Kernel Keyring — never written to disk.
+
+**TR:** Botun Ethereum işlemlerini tetikleyeceği **sıcak cüzdan (Hot Wallet)** anahtarı, diske yazılmadan doğrudan Linux çekirdeğinin güvenli hafızasına şifrelenerek enjekte edilecektir.
 
 ```bash
-# Anahtar enjeksiyon sihirbazını başlat
 python3 brain/brain.py --provision-executor
 ```
 
-Sistem sizden **en az 12 karakterli, güçlü bir koruma parolası** isteyecektir. Bu parolayı girin ve **güvenli bir yere not edin** (kaybederseniz anahtar kurtarılamaz).
+**EN:** You will be prompted for a **strong master password (min 12 chars)**. Save it securely — loss means unrecoverable key. The key is encrypted with AES-256-GCM in kernel memory. An `0x...` **Executor Wallet Address** will be generated.
 
-Sihirbaz, çekirdek hafızasında (Kernel Keyring) anahtarı AES-256-GCM ile şifreleyecek ve size `0x...` ile başlayan bir **Executor Cüzdan Adresi** üretecektir.
+**TR:** Sistem sizden **en az 12 karakterli, güçlü bir koruma parolası** isteyecektir. Bu parolayı girin ve **güvenli bir yere not edin** (kaybederseniz anahtar kurtarılamaz). Sihirbaz, çekirdek hafızasında (Kernel Keyring) anahtarı AES-256-GCM ile şifreleyecek ve size `0x...` ile başlayan bir **Executor Cüzdan Adresi** üretecektir.
 
-#### 🧩 Zincir Üstü Kayıt (ZORUNLU)
+#### 🧩 On-Chain Registration / Zincir Üstü Kayıt (MANDATORY / ZORUNLU)
 
-1. Üretilen cüzdan adresini kopyalayın.
-2. Kendi ana **soğuk cüzdanınızdan** (Ledger / Trezor / MetaMask) Remix IDE'ye bağlanın.
-3. `contracts/Vault.sol` akıllı sözleşmesini dağıtın (eğer daha önce dağıtmadıysanız).
-4. `addExecutor(address)` fonksiyonunu çağırın ve üretilen adresi `true` olarak yetkilendirin.
+1. Copy the generated wallet address.
+2. Connect your **cold wallet** (Ledger / Trezor / MetaMask) to Remix IDE.
+3. Deploy `contracts/Vault.sol` (if not already deployed).
+4. Call `addExecutor(address)` with the generated address set to `true`.
 
-> Artık **paranızın durduğu ana kasa**, bu izole robota sadece takas emri tetikleme yetkisi vermiş oldu. Executor cüzdanı **KASADAN PARA ÇEKEMEZ.**
+> **EN:** Your main vault now authorizes only this isolated bot to trigger swaps. The executor wallet **CANNOT WITHDRAW** from the vault.
+>
+> **TR:** Artık **paranızın durduğu ana kasa**, bu izole robota sadece takas emri tetikleme yetkisi vermiş oldu. Executor cüzdanı **KASADAN PARA ÇEKEMEZ.**
 
 ---
 
-### Adım 4: Ortam Değişkenlerinin Yapılandırılması
+### Step 4 / Adım 4: Environment Configuration (Ortam Değişkenleri)
 
 ```bash
 cp config/executioner.env.example .env
-# .env dosyasını bir metin editörüyle açın ve aşağıdaki alanları doldurun:
 ```
 
-| Değişken | Zorunlu | Açıklama |
-|----------|---------|----------|
-| `VAULT_ADDRESS` | ✅ | Adım 3'te dağıttığınız Vault sözleşme adresi |
-| `CHAIN_ID` | ✅ | Zincir numarası (Ethereum=1, Sepolia=11155111) |
-| `RPC_URL` | ✅ | Ethereum düğümünüzün RPC adresi |
-| `PRIVATE_KEY_1` | ✅ | Executor hot wallet özel anahtarı |
-| `SEARCHER_KEY` | ⬜ | Flashbots imzalayıcı anahtarı (opsiyonel) |
+| Variable / Değişken | Required / Zorunlu | Description / Açıklama |
+|---------------------|--------------------|------------------------|
+| `VAULT_ADDRESS` | ✅ | Vault contract address from Step 3 |
+| `CHAIN_ID` | ✅ | Chain ID (Ethereum=1, Sepolia=11155111) |
+| `RPC_URL` | ✅ | Your Ethereum node RPC URL |
+| `PRIVATE_KEY_1` | ✅ | Executor hot wallet private key |
+| `SEARCHER_KEY` | ⬜ | Flashbots signing key (optional) |
 
-> **GÜVENLİK:** `.env` dosyasını **ASLA** GitHub'a göndermeyin. `.gitignore` zaten bunu engeller.
+> **EN:** **NEVER** commit `.env` to GitHub. `.gitignore` already blocks it.
+>
+> **TR:** `.env` dosyasını **ASLA** GitHub'a göndermeyin. `.gitignore` zaten bunu engeller.
 
 ---
 
-### Adım 5: Hayaleti Ateşlemek (Full Execution)
+### Step 5 / Adım 5: Ignite the Phantom (Hayaleti Ateşlemek)
 
-Tüm altyapı zırhlandı, tüneller kuruldu ve anahtarlar kilitlendi. Artık otonom sistemi başlatma zamanı.
+**EN:** All infrastructure is armored, tunnels established, keys locked. Time to launch the autonomous system.
+
+**TR:** Tüm altyapı zırhlandı, tüneller kuruldu ve anahtarlar kilitlendi. Artık otonom sistemi başlatma zamanı.
 
 ```bash
 chmod +x scripts/run/run_all.sh
 sudo bash scripts/run/run_all.sh
 ```
 
-Script sizden Adım 3'te belirlediğiniz **Koruma Parolasını** isteyecektir. Parolanızı girdiğiniz an:
+**EN:** You will be prompted for the **Master Password** from Step 3. Upon entry:
 
-1. Anahtar **1 milisaniyeliğine** çözülür
-2. Rust ve Python süreçleri kendi izole çekirdeklerine (`taskset -c 2` ve `-c 3`) fırlatılır
-3. Parolanın bulunduğu bellek alanı RAM'den **kalıcı olarak silinir (Zeroize)**
+**TR:** Script sizden Adım 3'te belirlediğiniz **Koruma Parolasını** isteyecektir. Parolanızı girdiğiniz an:
 
-#### Canlı İzleme
+1. Key is decrypted for **≤1 ms**
+2. Rust and Python processes are pinned to isolated cores (`taskset -c 2` and `-c 3`)
+3. Password memory is **permanently zeroized** from RAM
+
+#### Live Monitoring / Canlı İzleme
 
 ```bash
-# 1. Terminal — Rust Executioner logları
+# Terminal 1 — Rust Executioner logs
 journalctl -u executioner -f
 
-# 2. Terminal — Python Brain logları
+# Terminal 2 — Python Brain logs
 journalctl -u executioner-brain -f
 
-# 3. Terminal — Watchdog durum raporu
+# Terminal 3 — Watchdog status
 journalctl -u executioner-watchdog -f
 ```
 
-> Ekranda `[BİLGİ]: Tetikçi core 1'e (2. CPU) çivilendi.` ve `[BİLGİ]: The Brain başlatılıyor...` mesajlarını görüyorsanız, operasyon başlamış demektir.
+> **EN:** You should see `[INFO]: Executioner pinned to core 2.` and `[INFO]: Brain starting...` — operation is live.
+>
+> **TR:** Ekranda `[BİLGİ]: Tetikçi core 2'ye çivilendi.` ve `[BİLGİ]: The Brain başlatılıyor...` mesajlarını görüyorsanız, operasyon başlamış demektir.
 
 ---
 
-## 🛡️ Acil Durum Tahliye ve Bakım Komutları
+## 🛡️ Emergency Evacuation & Maintenance / Acil Durum Tahliye ve Bakım
 
-Sistem üretim ortamındayken ağ parametrelerini anlık kontrol etmek veya acil bir durumda sistemi tamamen durdurup tüm kilitleri açmak için şu komut seti ayrılmıştır:
+| Command / Komut | Description / Açıklama |
+|-----------------|------------------------|
+| `sudo bash scripts/network_defense.sh status` | Firewall, RPS/RFS, sysctl queue health |
+| `sudo bash scripts/network_defense.sh logs` | WireGuard cryptographic handshake health |
+| `sudo bash scripts/network_defense.sh teardown` | **EMERGENCY STOP** (see below) |
 
-| Komut | Açıklama |
-|-------|----------|
-| `sudo bash scripts/network_defense.sh status` | Firewall, RPS/RFS ve Sysctl kuyruk sağlığını raporlar |
-| `sudo bash scripts/network_defense.sh logs` | WireGuard tünelindeki kriptografik el sıkışma sağlığını gösterir |
-| `sudo bash scripts/network_defense.sh teardown` | **ACİL DURUM STOP** (aşağıya bakın) |
+### EMERGENCY SHUTDOWN / ACİL DURUM TASFİYESİ
 
-### ACİL DURUM TASFİYESİ
+**EN:** In case of global network partition or physical breach suspicion:
 
-Olası bir küresel ağ bölünmesinde veya sunucu fiziksel ihlal şüphesinde:
+**TR:** Olası bir küresel ağ bölünmesinde veya sunucu fiziksel ihlal şüphesinde:
 
 ```bash
 sudo bash scripts/network_defense.sh teardown
 ```
 
-Bu komut **tek tıkla**:
-- WireGuard tünelini düşürür
-- Şifreli anahtarları çekirdekten `shred` ile kazır (kurtarılamaz)
-- `iptables` kurallarını sıfırlayarak tüm standart SSH portlarını dış dünyaya yeniden açar
-- Kernel sysctl tamponlarını orijinal Linux ayarlarına geri döndürür
+This command **in a single click** / Bu komut **tek tıkla**:
+- Drops WireGuard tunnel
+- `shred`s encrypted keys from kernel (unrecoverable)
+- Resets `iptables`, reopens all standard ports
+- Restores kernel sysctl buffers to Linux defaults
 
 ---
 
-## 🏗️ Sistem Mimarisi
+## 🏗️ System Architecture / Sistem Mimarisi
 
 ```
                            ┌─────────────────────────────────────┐
@@ -207,15 +222,15 @@ Bu komut **tek tıkla**:
                            │       GRUB: isolcpus=2,3            │
                            │       SMT: OFF · /dev/shm: 128MB    │
                            └──────────────┬──────────────────────┘
-                                          │
+                                           │
               ┌───────────────────────────────────────────────┐
-              │          FİZİKSEL AĞ ARAYÜZÜ (NIC)           │
+              │          PHYSICAL NIC (FİZİKSEL AĞ)          │
               │   RPS mask=3 (core 0-1) · RFS=32768/4096     │
-              │       ICMP DROP · Tüm Portlar DROP            │
+              │       ICMP DROP · All Ports DROP              │
               └──────────────────────┬────────────────────────┘
                                      │
               ┌──────────────────────┴────────────────────────┐
-              │           WIREGUARD TÜNELİ (wg0)              │
+              │           WIREGUARD TUNNEL (wg0)              │
               │  txqueuelen=10000 · PersistentKeepalive=25    │
               │  netdev_max_backlog=100000 · rmem=16MB        │
               └──────────────────────┬────────────────────────┘
@@ -224,7 +239,7 @@ Bu komut **tek tıkla**:
          │                           │                           │
          ▼                           ▼                           ▼
    ┌───────────┐             ┌──────────────┐          ┌──────────────┐
-   │ CORE 1    │             │  CORE 2       │          │  CORE 3      │
+   │ CORE 0    │             │  CORE 2       │          │  CORE 3      │
    │ Watchdog  │◄───────────►│  Executioner  │◄────────►│  Brain       │
    │ (Python)  │  mmap@61    │  (Rust)       │  mmap@63 │  (Python)    │
    │           │  heartbeat  │               │  flag    │              │
@@ -235,16 +250,16 @@ Bu komut **tek tıkla**:
          │                           │                         │
          ▼                           ▼                         ▼
    ┌──────────────────────────────────────────────────────────────────┐
-   │                      DIŞ AĞ (EXTERNAL)                          │
+   │                      EXTERNAL NETWORK (DIŞ AĞ)                  │
    │                                                                  │
-   │  Borsalar (WSS) ───► Brain ──► mmap ──► Executioner ──► Relays  │
-   │  Watchdog ──► Ping/ Pong ölçümü ──► Emergency Stop              │
+   │  Exchanges (WSS) ──► Brain ──► mmap ──► Executioner ──► Relays  │
+   │  Watchdog ──► Ping/Pong ──► Emergency Stop                      │
    └──────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 📁 Proje Yapısı
+## 📁 Project Structure / Proje Yapısı
 
 ```
 laplaces-demon/
@@ -266,60 +281,62 @@ laplaces-demon/
 │   └── run/                       # Launcher scripts
 │       ├── run_bot.sh             # Core 2: Rust executioner
 │       ├── run_brain.sh           # Core 3: Python brain
-│       ├── run_watchdog.sh        # Core 1: Python watchdog
+│       ├── run_watchdog.sh        # Core 0: Python watchdog
 │       └── run_all.sh             # All components simultaneously
 ├── config/
 │   └── executioner.env.example    # Environment variables template
 ├── Cargo.toml                     # Rust dependencies
 ├── README.md                      # This file
-├── LICENSE                        # Business Source License 1.1
+├── LICENSE                        # Business Source License 1.1 (Perpetual)
 └── .gitignore                     # Military-grade secret filtering
 ```
 
 ---
 
-## 🛡️ OPSEC & Anti-Insider Tedbirleri
+## 🛡️ OPSEC & Anti-Insider Measures / Tedbirler
 
-| Tedbir | Açıklama |
-|--------|----------|
-| **PTRACE Kalkanı** | `kernel.yama.ptrace_scope=1` — root saldırgan bile canlı RAM dökümü alamaz |
-| **Anahtar Şifreleme** | AES-256-GCM KEK; özel anahtar RAM'de ≤1 ms bulunur, sonra `libc.memset` ile kazınır |
-| **API Kısıtlaması** | CEX API anahtarlarında **Para Çekme (Withdrawal) KAPALI** olmalıdır |
-| **Ağ İzolasyonu** | WireGuard tüneli; fiziksel NIC tüm portları ve ICMP'yi düşürür |
-| **Çekirdek İzolasyonu** | GRUB `isolcpus=2,3`; RPS/RFS ile IRQ'lar core 0-1'e yönlendirilir |
-| **Devre Kesici** | Watchdog, heartbeat durması veya borsa gecikmesi >50ms'de sistemi durdurur |
+| Measure / Tedbir | Description / Açıklama |
+|------------------|------------------------|
+| **PTRACE Shield** (PTRACE Kalkanı) | `kernel.yama.ptrace_scope=1` — even root attacker cannot dump live RAM |
+| **Key Encryption** (Anahtar Şifreleme) | AES-256-GCM KEK; private key in RAM ≤1 ms, then zeroized via `libc.memset` |
+| **API Restriction** (API Kısıtlaması) | CEX API keys must have **Withdrawal = OFF** |
+| **Network Isolation** (Ağ İzolasyonu) | WireGuard tunnel; physical NIC drops all ports and ICMP |
+| **Core Isolation** (Çekirdek İzolasyonu) | GRUB `isolcpus=2,3`; RPS/RFS steers IRQs to core 0-1 |
+| **Circuit Breaker** (Devre Kesici) | Watchdog halts system on heartbeat stall or exchange latency >50ms |
 
 ---
 
-## ⚙️ Donanım Gereksinimleri
+## ⚙️ Hardware Requirements / Donanım Gereksinimleri
 
-| Bileşen | Minimum | Önerilen |
-|---------|---------|----------|
-| **CPU** | 4 fiziksel çekirdek (8+ thread) | 8+ fiziksel çekirdek |
+| Component / Bileşen | Minimum | Recommended / Önerilen |
+|---------------------|---------|------------------------|
+| **CPU** | 4 physical cores (8+ threads) | 8+ physical cores |
 | **RAM** | 32 GB ECC | 64 GB+ ECC |
-| **Depolama** | 512 GB NVMe SSD | 1 TB+ NVMe Gen4 |
-| **Ağ** | 1 Gbps dedicated | 10 Gbps dedicated |
-| **SLA** | — | %99.99 donanım garantisi |
-| **Uzaktan Yönetim** | — | IPMI / KVM Over IP |
+| **Storage / Depolama** | 512 GB NVMe SSD | 1 TB+ NVMe Gen4 |
+| **Network / Ağ** | 1 Gbps dedicated | 10 Gbps dedicated |
+| **SLA** | — | %99.99 hardware guarantee |
+| **Remote Management / Uzaktan Yönetim** | — | IPMI / KVM Over IP |
 
 ---
 
-## ⚖️ Lisans — Business Source License 1.1
+## ⚖️ License — Business Source License 1.1 (Perpetual)
 
 Copyright © 2026 runtime-stranger. All rights reserved.
 
-| Parametre | Değer |
-|-----------|-------|
-| **Lisans Türü** | Business Source License 1.1 (Kalıcı) |
-| **Ek Kullanım İzni** | Yalnızca eğitim/araştırma amaçlı |
-| **Süre** | **SÜRESİZ / PERPETUAL** — dönüşüm yok |
+| Parameter / Parametre | Value / Değer |
+|-----------------------|---------------|
+| **License Type / Lisans Türü** | Business Source License 1.1 (Perpetual / Kalıcı) |
+| **Additional Use Grant / Ek Kullanım İzni** | Educational / research only (Yalnızca eğitim/araştırma amaçlı) |
+| **Duration / Süre** | **PERPETUAL / SÜRESİZ** — no conversion, no expiry (dönüşüm yok, süre sınırı yok) |
 
-**Ticari kullanım, kopyalayarak para kazanma, fork ederek ticari sisteme dönüştürme KESİNLİKLE YASAKTIR.** Bu lisans kalıcıdır (perpetual), hiçbir açık kaynak lisansa dönüşmez. Detaylı metin için [LICENSE](./LICENSE) dosyasını inceleyiniz.
+**EN:** Commercial use, copying for profit, forking into commercial systems is **STRICTLY PROHIBITED**. This license is **perpetual** — it never converts to any open-source license. See [LICENSE](./LICENSE) for full text.
+
+**TR:** Ticari kullanım, kopyalayarak para kazanma, fork ederek ticari sisteme dönüştürme **KESİNLİKLE YASAKTIR**. Bu lisans **kalıcıdır (perpetual)**, hiçbir açık kaynak lisansa dönüşmez. Detaylı metin için [LICENSE](./LICENSE) dosyasını inceleyiniz.
 
 ---
 
 <p align="center">
-  <sub>Business Source License 1.1 · © 2026 runtime-stranger</sub>
+  <sub>Business Source License 1.1 (Perpetual) · © 2026 runtime-stranger</sub>
   <br>
   <sub>Rust · Python · Solidity · Linux Kernel · secp256k1 · Flashbots</sub>
   <br>
