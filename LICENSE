@@ -1,0 +1,67 @@
+Business Source License 1.1
+
+License text copyright (c) 2017 MariaDB Corporation Ab, All Rights Reserved.
+"Business Source License" is a trademark of MariaDB Corporation Ab.
+
+-----------------------------------------------------------------------------
+
+Parameters
+
+Licensor:             runtime-stranger
+Licensed Work:        LAPLACE'S DEMON (The Licensed Work is (c) 2026
+                      runtime-stranger)
+Additional Use Grant: The Licensed Work may be used, copied, modified,
+                      and distributed for NON-COMMERCIAL, EDUCATIONAL,
+                      AND RESEARCH PURPOSES ONLY.  Any use of the Licensed
+                      Work in a production environment, for commercial
+                      gain, or as part of a revenue-generating activity
+                      (including but not limited to MEV extraction,
+                      arbitrage trading, market making, front-running,
+                      or operation by hedge funds, proprietary trading
+                      firms, or financial institutions) is STRICTLY
+                      PROHIBITED without express written permission from
+                      the Licensor.
+Change Date:          2036-07-08
+Change License:       Apache License, Version 2.0
+
+-----------------------------------------------------------------------------
+
+Terms
+
+The Licensor hereby grants you the right to copy, modify, create derivative
+works, redistribute, and make non-production use of the Licensed Work. The
+Licensor may make an Additional Use Grant, above, permitting limited
+production use.
+
+Effective on the Change Date, or the fourth anniversary of the first publicly
+available distribution of a specific version of the Licensed Work under this
+License, whichever comes first, the Licensed Work will become available
+under the terms of the Change License, which is displayed above.
+
+Use of the Licensed Work is restricted by the Additional Use Grant above,
+both before and after the Change Date, UNLESS your use is authorized by the
+Additional Use Grant or the Change License.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+-----------------------------------------------------------------------------
+
+Patent Notice
+
+The Licensor hereby grants you a world-wide, royalty-free, non-exclusive,
+sublicensable license, for the duration of the copyright, to make, have made,
+use, offer to sell, sell, import, and otherwise transfer the Licensed Work.
+Such license applies only to those patent claims licensable by the Licensor
+that are necessarily infringed by a Contribution made by the Licensor, or by
+combination of a Contribution with the Licensed Work. If you institute patent
+litigation against any entity (including a cross-claim or counterclaim in a
+lawsuit) alleging that the Licensed Work (or a Contribution incorporated
+within the Licensed Work) constitutes direct or contributory patent
+infringement, then any patent licenses granted to you under this License for
+that Licensed Work shall terminate as of the date such litigation is filed.
